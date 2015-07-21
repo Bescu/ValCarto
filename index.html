@@ -1,0 +1,244 @@
+﻿<!DOCTYPE  html>
+<html>
+<head>
+<title>Cartographie des équipements Ville de Valenciennes</title>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<link rel='stylesheet' media='(max-width: 700px)' href='petiteTaille.css'/>
+<link rel='stylesheet' media='(min-width: 701px)' href='normal.css'/>
+
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+
+<script type="text/javascript">
+	
+function initialize() {
+
+	// import de la carte OSM(Mapnik)
+	
+	osmMapType = new google.maps.ImageMapType({
+		getTileUrl: function(coord, zoom) {
+			return "http://tile.openstreetmap.org/" +
+			zoom + "/" + coord.x + "/" + coord.y + ".png";
+		},
+		tileSize: new google.maps.Size(256, 256),
+		isPng: true,
+		alt: "OpenStreetMap Mapnik layer",
+		name: "OSM",
+		maxZoom: 20
+	});
+
+	// import de la carte MapQuest
+	
+	mapQuestType = new google.maps.ImageMapType({
+		getTileUrl: function(coord, zoom) {
+			return "http://otile1.mqcdn.com/tiles/1.0.0/map/" +
+			zoom + "/" + coord.x + "/" + coord.y + ".png";
+		},
+		tileSize: new google.maps.Size(256, 256),
+		isPng: true,
+		alt: "MapQuest layer (données OSM)",
+		name: "MapQuest",
+		maxZoom: 20
+	});
+	
+	// chargement de l'application avec ses options
+	
+	var latlng = new google.maps.LatLng(50.3607, 3.5042);
+	var myOptions = {
+		zoom: 14,
+		minZoom: 13,
+		maxZoom: 18,
+		center: latlng,
+		disableDefaultUI: true,
+		mapTypeControl: true,
+		mapTypeControlOptions: {mapTypeIds: [google.maps.MapTypeId.ROADMAP,google.maps.MapTypeId.SATELLITE,'OSM','MapQuest'],style: google.maps.MapTypeControlStyle.DROPDOWN_MENU},
+		streetViewControl: true,
+		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_TOP},
+		scaleControl: true,
+		zoomControl: true,
+		zoomControlOptions: {position: google.maps.ControlPosition.RIGHT_TOP},
+		mapTypeId: 'MapQuest'
+	};
+	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	map.mapTypes.set('OSM',osmMapType);
+	map.mapTypes.set('MapQuest',mapQuestType);
+	map.controls[google.maps.ControlPosition.BOTTOM_RIGHT].push(document.getElementById("mapCopyright"));
+	
+	// fonction pour supprimer une infowindow ouverte et/ou l'animation d'un marqueur
+	
+	function resetInfAni(){
+	
+		// si une fenêtre d'information est déjà ouverte, on la ferme
+		
+		if (typeof infoWindow != 'undefined') {
+			infoWindow.close();
+		};
+		
+		// s'il y a encore un marker animé, le supprimer et remettre le feature d'origine
+		
+		if (typeof marker != 'undefined' && marker.getMap() != 'null') {
+			featureAnim.setGeometry({lat:latFeat,lng:lngFeat});
+			marker.setMap(null);
+		};
+	};
+	
+	// fonction pour répartir les entités selon différentes couches selon leur type
+	
+	function splitData(AddFeatureEvent){
+		var feature = AddFeatureEvent.feature;
+		var genre = feature.getProperty("Genre");
+		var layer_index = (!layers[genre] || layers[genre]===undefined) ? "problems" : genre;
+		layers[layer_index][0].add(feature);
+	};
+	
+	// fonction lancée quand une checkbox est activée/désactivée
+	
+	function legClic(event){
+	
+		// si une fenêtre d'information est déjà ouverte ou un marqueur animé on les ferme
+		
+		resetInfAni();
+		
+		// affichage ou désactivation de la couche concernée
+		
+		var elemInd = event.target.name;
+		var elemClass = event.target.className;
+		if (elemClass == 'imgLegend') {
+			layers[elemInd][0].setMap(null);
+			var elem=document.getElementsByName(elemInd)[0];
+			elem.className = 'imgLegendClicked';
+		}
+		else {
+			layers[elemInd][0].setMap(map);
+			var elem=document.getElementsByName(elemInd)[0];
+			elem.className = 'imgLegend';
+		};	
+	};
+	
+	// fonction lancée quand il y a un clic sur une entité
+	
+	function clic(event){
+		
+		// si une fenêtre d'information est déjà ouverte ou un marqueur animé on les ferme
+		
+		resetInfAni();
+		
+		// construction du code HTML à insérer dans la fenêtre d'information avec des règles de conditions (si numéro = 0 alors on ne l'affiche pas, etc.)
+		
+		var htmlInfo = '<div class="infoWindow">\n<h3 id="titreInfo">' + event.feature.getProperty("Libelle") + '</h3>\n' + '<p class="type"><em>Type : ' +
+		layers[event.feature.getProperty("Genre")][2] + '</em></p>\n<hr>\n<ul id="listeAttributs">\n' + '<li><b>Adresse :</b> ';
+		if (event.feature.getProperty("Num_1")!=0) {
+		htmlInfo = htmlInfo + event.feature.getProperty("Num_1");
+		};
+		if (event.feature.getProperty("Typ_Voie")) {
+		htmlInfo = htmlInfo + ' ' +	event.feature.getProperty("Typ_Voie");
+		};
+		if (event.feature.getProperty("Voie")) {
+		htmlInfo = htmlInfo + ' ' + event.feature.getProperty("Voie") + '</li>\n</ul>\n</div>';
+		};
+		
+		// création et ouverture de la fenêtre d'information
+
+		infoWindow = new google.maps.InfoWindow({ content: htmlInfo, position: event.latLng, pixelOffset: {width:0, height:-40}});
+		infoWindow.open(map);
+		infoWindow.addListener("closeclick",resetInfAni);
+		
+		// animation de l'icone
+		
+		latFeat = event.latLng.lat();
+		lngFeat = event.latLng.lng();
+		featureAnim = event.feature;
+		featureAnim.setGeometry(0,0); // je déplace le feature pour qu'il ne soit plus visible sur la carte
+		marker = new google.maps.Marker({position:{lat:latFeat,lng:lngFeat},map:map,icon:{url: layers[featureAnim.getProperty("Genre")][1], scaledSize: sizeIcon},animation: google.maps.Animation.BOUNCE}); // je créé un marker animé qui le remplace
+		
+		// Si on veut que l'animation s'arrête au bout d'un moment :
+		/*setTimeout(function(){
+			marker.setMap(null);
+			featureAnim.setGeometry({lat:latFeat,lng:lngFeat});
+			},2850);*/
+	};
+	
+	// fonction lancée quand le fond de plan change (pour les copyrights)
+	
+	function onMapTypeIdChanged(event){
+		newMapType = map.getMapTypeId();
+		copyrightDiv = document.getElementById("mapCopyright");
+		if (newMapType in copyright){
+			copyrightDiv.innerHTML = copyright[newMapType];
+		} else {
+			copyrightDiv.innerHTML = '© <a href="http://mapicons.nicolasmollet.com" target="blank">Maps Icons Collection</a>';
+		}
+	}
+	
+	// Création des couches thématiques dans un objet contenant plusieurs array : [0] = création de l'objet Data ; [1] = lien logo ; [2] = Nom à afficher dans la légende
+	
+	layers = {
+		ecole: [ new google.maps.Data(), "img/school.png" , "Écoles"],
+		petite_enfance: [ new google.maps.Data(), "img/nanny.png" , "Petite enfance"],
+		sports: [ new google.maps.Data(), "img/jogging.png" , "Sports"],
+		culture: [ new google.maps.Data(), "img/art-museum-2.png" , "Monuments"]
+	};
+	
+	var htmlLegende = ''; // variable accueillant le code HTML qui va créer la légende
+	var sizeIcon = new google.maps.Size(28,32); // taille des icones
+	
+	for (index in layers){
+		layers[index][0].setMap(map); // affichage des couches sur la carte
+		layers[index][0].setStyle(function(feature){ // fonction pour retourner en titre le Libellé du feature voir ce sujet : http://stackoverflow.com/questions/25787502/add-tooltip-on-a-data-feature-object-like-we-can-do-for-the-marker/25792796#25792796
+			return {
+				title: feature.getProperty('Libelle')||null, // défini le titre en fonction de son Libellé
+				icon:{url: layers[feature.getProperty('Genre')][1], scaledSize: sizeIcon} // défini l'icone de chaque couche en fonction de son genre
+			};
+		});
+		layers[index][0].addListener('click',clic); // ajout d'un événement clic sur les entités
+		htmlLegende = htmlLegende + '<img class="imgLegend" src="' + layers[index][1] +'" name="' + index + '"> ' + layers[index][2] + '<BR>\n'; // construit le code HTML de la légende
+	};
+	
+	// intégration du code de la légende dans le HTML
+	
+	document.getElementById("legende").innerHTML=htmlLegende;
+	
+	// ajout des événement sur les images de la légende
+	
+	for (index in layers){
+		document.getElementsByName(index)[0].addEventListener("click",legClic);
+	};
+	
+	// import de toutes les données du GeoJson et de l'évenement à chaque ajout dans data1
+	
+	data1 = new google.maps.Data();
+	data1.addListener('addfeature',splitData);
+	data1.loadGeoJson('bati.geojson');
+	
+	// import du masque des communes voisines
+	
+	dataCom = new google.maps.Data();
+	dataCom.loadGeoJson('com.geojson');
+	dataCom.setStyle({fillOpacity:0.4,strokeWeight:0.5,strokeColor:"white",clickable:false});
+	dataCom.setMap(map);
+	
+	// Gestion des copyright
+	
+	copyright={
+	OSM: '© Les contributeurs d\'<a href="http://www.openstreetmap.org" target="blank">OpenStreetMap</a>, © <a href="http://mapicons.nicolasmollet.com" target="blank">Maps Icons Collection</a>',
+	MapQuest: '© <a href="http://www.mapquest.com/" target="blank">MapQuest</a>, © Les contributeurs d\'<a href="http://www.openstreetmap.org" target="blank">OpenStreetMap</a>, © <a href="http://mapicons.nicolasmollet.com" target="blank">Maps Icons Collection</a>'
+	}
+	
+	google.maps.event.addListener(map, "maptypeid_changed", onMapTypeIdChanged);
+	onMapTypeIdChanged();
+	
+}
+
+</script>
+</head>
+<body onload="initialize()">
+<div id="map_canvas"></div>
+<div id="blocLegende">
+	<h1 id="titreLegende">Les principaux équipements de la ville de Valenciennes</h1>
+	<form id="legende">
+	</form>
+</div>
+<div id="mapCopyright"></div>
+<a href="http://www.valenciennes.fr/" target="blank"><img id="logo" src="logo.png"></a>
+</body>
+</html>

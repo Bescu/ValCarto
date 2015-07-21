@@ -1,0 +1,109 @@
+html {
+height: 100%;
+}
+
+body {
+height: 100%;
+width: 100%;
+margin: 0px;
+padding: 0px;
+over-flow: auto;
+}
+
+h1 { 
+font-size: 8px;
+text-align: center;
+margin: 5px;
+padding: 0;
+}
+
+#map_canvas {
+height: 100%;
+z-index: 0;
+}
+
+#blocLegende {
+margin: 0;
+padding: 0;
+background-color: white;
+opacity: 0.8;
+position: absolute;
+left: 5px;
+top: 5px;
+width: 20%;
+min-width: 70px;
+max-width: 350px;
+z-index: 1;
+border-radius:16px;
+padding-right:10px;
+padding-left:10px;
+padding-bottom:10px;
+}
+
+input[type='checkbox'] {
+margin: 0;
+padding: 0;
+width: 6px;
+height: 6px;
+}
+
+.imgLegend{
+width: 7px;
+vertical-align:middle;
+cursor:pointer;
+}
+
+.imgLegendClicked{
+width: 7px;
+vertical-align:middle;
+opacity: 0.2;
+cursor:pointer;
+}
+
+#legende {
+font-size: 7px;
+}
+
+#logo {
+position: absolute;
+right: 0px;
+bottom: 13px;
+z-index: 1;
+width: 50px;
+background-color: white;
+opacity: 0.8;
+}
+
+a img {
+border: 0;
+}
+
+.infoWindow * {
+padding: 0;
+margin: 0;
+width: 100px;
+}
+
+.type {
+font-size: 6px;
+margin-bottom: 3px;
+}
+
+h3 { 
+font-size: 8px;
+}
+
+#listeAttributs {
+font-size: 7px;
+margin-top: 4px;
+}
+
+#mapCopyright {
+font-size: 10px;
+font-family: Arial, sans-serif;
+margin: 0;
+padding: 1px 3px 1px 3px;
+white-space: nowrap;
+background-color: white;
+opacity: 0.6;
+}
