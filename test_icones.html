@@ -46,13 +46,6 @@ function initialize() {
 	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 	map.mapTypes.set('MapQuest',mapQuestType);
 	
-	// import du masque des communes voisines
-	
-	dataCom = new google.maps.Data();
-	dataCom.loadGeoJson('com.geojson');
-	dataCom.setStyle({fillOpacity:0.4,strokeWeight:0.5,strokeColor:"white",clickable:false});
-	dataCom.setMap(map);
-	
 	arrayIcones = ['auditorium.png' , 'autres services.png' , 'autres services2.png' , 'autres services3.png' , 'autres services4.png' , 'autres services5.png' , 'bibliotheque.png' , 'collège.png' , 'conservatoire.png' , 'creche.png' , 'equipement sportif 1.png' , 'equipement sportif 2.png' , 'equipement sportif 3.png' , 'equipement sportif 4.png' , 'equipement sportif 5.png' , 'espace famille jeunesse.png' , 'hotel de ville.png' , 'lycee1.png' , 'lycee2.png' , 'maternelle.png' , 'office de tourisme.png' , 'primaire.png' , 'statue.png' , 'theatre.png' , 'universite.png']
 
 	for (icone in arrayIcones){
