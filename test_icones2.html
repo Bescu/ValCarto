@@ -1,0 +1,85 @@
+﻿<!DOCTYPE  html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<style type="text/css">
+html {
+height: 100%;
+}
+body {
+height: 100%;
+margin: 0px;
+padding: 0px;
+}
+#map_canvas {
+height: 100%;
+width: 100%;
+}
+</style>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false" ></script>
+<script type="text/javascript">
+
+function initialize() {
+
+	// import de la carte MapQuest
+	
+	mapQuestType = new google.maps.ImageMapType({
+		getTileUrl: function(coord, zoom) {
+			return "http://otile1.mqcdn.com/tiles/1.0.0/map/" +
+			zoom + "/" + coord.x + "/" + coord.y + ".png";
+		},
+		tileSize: new google.maps.Size(256, 256),
+		isPng: true,
+		alt: "MapQuest layer (données OSM)",
+		name: "MapQuest",
+		maxZoom: 20
+	});
+	
+	var latlng= new google.maps.LatLng(50.3586, 3.5236);
+	var myOptions = {
+		zoom: 14,
+		center: latlng,
+		mapTypeControlOptions: {mapTypeIds: [google.maps.MapTypeId.ROADMAP,google.maps.MapTypeId.SATELLITE,'MapQuest'],style: google.maps.MapTypeControlStyle.DROPDOWN_MENU},
+		mapTypeId: 'MapQuest'
+	};
+	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	map.mapTypes.set('MapQuest',mapQuestType);
+	
+	arrayIcones = ['mairie contour gris.png' , 'mairie dégradé interne.png' , 'mairie demi-contour gris.png' , 'mairie ombre externe perspective.png' , 'mairie ombre externe.png' , 'services publics mairie 28x32 009DE0 .png']
+	
+	x = 3.509
+	y = 50.359
+	
+	for (icone in arrayIcones){
+		x = x + 0.004;		
+		if (arrayIcones[icone] == "mairie ombre externe perspective.png"){
+			var latlngIcone = new google.maps.LatLng(y-0.0021,x);
+			var marker = new google.maps.Marker({
+				position: latlngIcone,
+				map: map,
+				icon: {url: "img3/"+arrayIcones[icone], scaledSize: new google.maps.Size(112.75,92.75)}			
+			});
+		} else if (arrayIcones[icone] == "mairie ombre externe.png"){
+			var latlngIcone = new google.maps.LatLng(y-0.0021,x);
+			var marker = new google.maps.Marker({
+				position: latlngIcone,
+				map: map,
+				icon: {url: "img3/"+arrayIcones[icone], scaledSize: new google.maps.Size(104.25,108.5)}			
+			});
+		} else {
+			var latlngIcone = new google.maps.LatLng(y,x);
+			var marker = new google.maps.Marker({
+				position: latlngIcone,
+				map: map,
+				icon: {url: "img3/"+arrayIcones[icone], scaledSize: new google.maps.Size(30,34)}			
+			});
+		};
+	};
+};
+</script>
+</head>
+<body onload="initialize()">
+<div id="map_canvas"></div>
+</body>
+</html>
